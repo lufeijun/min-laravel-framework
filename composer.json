@@ -1,0 +1,25 @@
+{
+    "name": "lufeijun1234/min-laravel-framework",
+    "type": "library",
+    "description": "The min-Laravel Framework.",
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "lufeijun1234",
+            "email": "lufeijun_1234@126.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "files": [
+            "src/Lufeijun1234/Support/helpers.php"
+        ],
+        "psr-4": {
+            "Lufeijun1234\\": "src/Lufeijun1234/"
+        }
+    }
+}
