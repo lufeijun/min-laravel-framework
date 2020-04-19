@@ -4,6 +4,7 @@ namespace Lufeijun1234\Foundation;
 
 use Lufeijun1234\Container\Container;
 use Lufeijun1234\Contracts\Container\ContainerContract;
+use Lufeijun1234\Support\Arr;
 
 class Application extends Container
 {
@@ -28,6 +29,29 @@ class Application extends Container
 	 */
 	protected $appPath;
 
+
+
+	/**
+	 * All of the registered service providers.
+	 *  所有注册在籍的服务提供者
+	 * @var Abstracts\Serviceprovider\ServiceProvider[]
+	 */
+	protected $serviceProviders = [];
+
+	/**
+	 * The names of the loaded service providers.
+	 *  key 是服务提供者类名
+	 * @var array
+	 */
+	protected $loadedProviders = [];
+
+
+	/**
+	 * Indicates if the application has "booted".
+	 *
+	 * @var bool
+	 */
+	protected $booted = false;
 
 
 	/**
@@ -200,16 +224,143 @@ class Application extends Container
 		parent::flush();
 
 		$this->buildStack = [];
-		//$this->loadedProviders = [];
+		$this->loadedProviders = [];
 		//$this->bootedCallbacks = [];
 		//$this->bootingCallbacks = [];
 		//$this->deferredServices = [];
 		$this->reboundCallbacks = [];
-		//$this->serviceProviders = [];
+		$this->serviceProviders = [];
 		//$this->resolvingCallbacks = [];
 		//$this->terminatingCallbacks = [];
 		//$this->afterResolvingCallbacks = [];
 		//$this->globalResolvingCallbacks = [];
+	}
+
+
+	// 服务提供者
+
+	/**
+	 * Register a service provider with the application.
+	 *  往应用程序中注册一个服务提供者
+	 *
+	 * @param  ServiceProvider|string  $provider
+	 * @param  bool  $force
+	 * @return ServiceProvider
+	 */
+	public function register($provider, $force = false)
+	{
+		// 已经注册过，并且没有需要重新注册
+		if ( ($registered = $this->getProvider($provider)) && ! $force) {
+			return $registered;
+		}
+
+		// 如果参数是字符串，
+		if (is_string($provider)) {
+			$provider = $this->resolveProvider($provider);
+		}
+
+		// 调用服务提供者的 register 方法
+		$provider->register();
+
+		// 根据属性设置，在服务容器中进行绑定一下实现关系
+		if (property_exists($provider, 'bindings')) {
+			foreach ($provider->bindings as $key => $value) {
+				$this->bind($key, $value);
+			}
+		}
+		if (property_exists($provider, 'singletons')) {
+			foreach ($provider->singletons as $key => $value) {
+				$this->singleton($key, $value);
+			}
+		}
+
+		$this->markAsRegistered($provider);
+
+		// 如果系统启动了，就需要调用服务提供者的 boot 方法，
+		if ($this->isBooted()) {
+			$this->bootProvider($provider);
+		}
+
+		return $provider;
+	}
+
+
+	/**
+	 * Get the registered service provider instance if it exists.
+	 *
+	 * @param  ServiceProvider|string  $provider
+	 * @return ServiceProvider|null
+	 */
+	public function getProvider($provider)
+	{
+		return array_values($this->getProviders($provider))[0] ?? null;
+	}
+
+	/**
+	 * Get the registered service provider instances if any exist.
+	 *  获取服务提供者
+	 * @param  ServiceProvider|string  $provider
+	 * @return array
+	 */
+	public function getProviders($provider)
+	{
+		$name = is_string($provider) ? $provider : get_class($provider);
+
+		return Arr::where($this->serviceProviders, function ($value) use ($name) {
+			return $value instanceof $name;
+		});
+	}
+
+	/**
+	 * Resolve a service provider instance from the class name.
+	 *  通过类名直接 new 一个服务提供者类
+	 * @param  string  $provider
+	 * @return ServiceProvider
+	 */
+	public function resolveProvider($provider)
+	{
+		return new $provider($this);
+	}
+
+	/**
+	 * Mark the given provider as registered.
+	 *  标记一下注册过的服务提供者
+	 * @param  ServiceProvider  $provider
+	 * @return void
+	 */
+	protected function markAsRegistered($provider)
+	{
+		$this->serviceProviders[] = $provider;
+
+		$this->loadedProviders[get_class($provider)] = true;
+	}
+
+
+
+	/**
+	 * Determine if the application has booted.
+	 *  判断 application 是否启动
+	 * @return bool
+	 */
+	public function isBooted()
+	{
+		return $this->booted;
+	}
+
+
+	/**
+	 * Boot the given service provider.
+	 *  调用服务提供者的 boot 方法
+	 * @param ServiceProvider $provider
+	 * @return mixed
+	 * @throws \Lufeijun1234\Container\BindingResolutionException
+	 * @throws \ReflectionException
+	 */
+	protected function bootProvider(ServiceProvider $provider)
+	{
+		if (method_exists($provider, 'boot')) {
+			return $this->call([$provider, 'boot']);
+		}
 	}
 
 }

@@ -5,6 +5,7 @@ namespace Lufeijun1234\Container;
 use ArrayAccess;
 use Closure;
 use Exception;
+use InvalidArgumentException;
 use Lufeijun1234\Container\BindingResolutionException;
 use Lufeijun1234\Contracts\Container\ContainerContract;
 use LogicException;
@@ -88,6 +89,15 @@ class Container implements ArrayAccess , ContainerContract
 	 * @var array[]
 	 */
 	protected $with = [];
+
+
+	/**
+	 * The container's method bindings.
+	 *  绑定方法数组
+	 * @var Closure[]
+	 */
+	protected $methodBindings = [];
+
 
 
 
@@ -217,11 +227,19 @@ class Container implements ArrayAccess , ContainerContract
 	}
 
 	/**
-	 * @inheritDoc
+	 * Call the given Closure / class@method and inject its dependencies.
+	 *  调用闭包或者方法，
+	 * @param callable|string $callback
+	 * @param array<string, mixed> $parameters
+	 * @param string|null $defaultMethod
+	 * @return mixed
+	 *
+	 * @throws ReflectionException
+	 * @throws \Lufeijun1234\Container\BindingResolutionException
 	 */
 	public function call($callback, array $parameters = [], $defaultMethod = null)
 	{
-		// TODO: Implement call() method.
+		return BoundMethod::call($this, $callback, $parameters, $defaultMethod);
 	}
 
 	/**
@@ -862,6 +880,59 @@ class Container implements ArrayAccess , ContainerContract
 	public function __set($key, $value)
 	{
 		$this[$key] = $value;
+	}
+
+
+
+	/**
+	 * Determine if the container has a method binding.
+	 *  判断容器上是否绑定了方法
+	 * @param  string  $method
+	 * @return bool
+	 */
+	public function hasMethodBinding($method)
+	{
+		return isset($this->methodBindings[$method]);
+	}
+
+
+	/**
+	 * Bind a callback to resolve with Container::call.
+	 *  绑定方法
+	 * @param  array|string  $method
+	 * @param  \Closure  $callback
+	 * @return void
+	 */
+	public function bindMethod($method, $callback)
+	{
+		$this->methodBindings[$this->parseBindMethod($method)] = $callback;
+	}
+
+	/**
+	 * Get the method to be bound in class@method format.
+	 *  处理格式
+	 * @param  array|string  $method
+	 * @return string
+	 */
+	protected function parseBindMethod($method)
+	{
+		if (is_array($method)) {
+			return $method[0].'@'.$method[1];
+		}
+
+		return $method;
+	}
+
+	/**
+	 * Get the method binding for the given method.
+	 *  调用绑定方法
+	 * @param  string  $method
+	 * @param  mixed  $instance
+	 * @return mixed
+	 */
+	public function callMethodBinding($method, $instance)
+	{
+		return call_user_func($this->methodBindings[$method], $instance, $this);
 	}
 
 }
