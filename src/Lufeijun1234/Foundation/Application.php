@@ -4,6 +4,7 @@ namespace Lufeijun1234\Foundation;
 
 use Lufeijun1234\Container\Container;
 use Lufeijun1234\Contracts\Container\ContainerContract;
+use Lufeijun1234\Events\EventServiceProvider;
 use Lufeijun1234\Support\Arr;
 
 class Application extends Container
@@ -188,8 +189,8 @@ class Application extends Container
 	 */
 	protected function registerBaseServiceProviders()
 	{
-		return;
 		$this->register(new EventServiceProvider($this));
+		return;
 		$this->register(new LogServiceProvider($this));
 		$this->register(new RoutingServiceProvider($this));
 	}
