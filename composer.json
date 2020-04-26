@@ -13,7 +13,9 @@
             "email": "lufeijun_1234@126.com"
         }
     ],
-    "require": {},
+    "require": {
+        "symfony/http-foundation": "^5.0"
+    },
     "autoload": {
         "files": [
             "src/Lufeijun1234/Support/helpers.php"

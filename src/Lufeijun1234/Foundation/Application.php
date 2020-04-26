@@ -49,10 +49,20 @@ class Application extends Container
 
 	/**
 	 * Indicates if the application has "booted".
-	 *
+	 *   系统核心组件启动为 boot ？
 	 * @var bool
 	 */
 	protected $booted = false;
+
+
+	/**
+	 * Indicates if the application has been bootstrapped before.
+	 *  http 相关服务启动为 bootstrap ？
+	 * @var bool
+	 */
+	protected $hasBeenBootstrapped = false;
+
+
 
 
 	/**
@@ -361,6 +371,39 @@ class Application extends Container
 	{
 		if (method_exists($provider, 'boot')) {
 			return $this->call([$provider, 'boot']);
+		}
+	}
+
+
+
+	/**
+	 * Determine if the application has been bootstrapped before.
+	 *  判断 application 是否被 bootstrap 过
+	 * @return bool
+	 */
+	public function hasBeenBootstrapped()
+	{
+		return $this->hasBeenBootstrapped;
+	}
+
+	/**
+	 * Run the given array of bootstrap classes.
+	 *  启动一些服务
+	 * @param array $bootstrappers
+	 * @return void
+	 * @throws \Lufeijun1234\Container\BindingResolutionException
+	 * @throws \ReflectionException
+	 */
+	public function bootstrapWith(array $bootstrappers)
+	{
+		$this->hasBeenBootstrapped = true;
+
+		foreach ($bootstrappers as $bootstrapper) {
+			$this['events']->dispatch('bootstrapping: '.$bootstrapper, [$this]);
+
+			$this->make($bootstrapper)->bootstrap($this);
+
+			$this['events']->dispatch('bootstrapped: '.$bootstrapper, [$this]);
 		}
 	}
 
