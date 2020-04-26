@@ -30,7 +30,7 @@ class Kernel implements KernelContract
 	 */
 	protected $bootstrappers = [
 		\Lufeijun1234\Foundation\Bootstrap\LoadEnvironmentVariables::class,
-//		\Illuminate\Foundation\Bootstrap\LoadConfiguration::class,
+		\Lufeijun1234\Foundation\Bootstrap\LoadConfiguration::class,
 //		\Illuminate\Foundation\Bootstrap\HandleExceptions::class,
 //		\Illuminate\Foundation\Bootstrap\RegisterFacades::class,
 //		\Illuminate\Foundation\Bootstrap\RegisterProviders::class,

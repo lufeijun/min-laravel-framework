@@ -121,7 +121,7 @@ class Application extends Container
 		$this->instance('path', $this->path());
 		$this->instance('path.base', $this->basePath());
 //		$this->instance('path.lang', $this->langPath());
-//		$this->instance('path.config', $this->configPath());
+		$this->instance('path.config', $this->configPath());
 		$this->instance('path.public', $this->publicPath());
 //		$this->instance('path.storage', $this->storagePath());
 //		$this->instance('path.database', $this->databasePath());
@@ -177,6 +177,18 @@ class Application extends Container
 	{
 		return $this->basePath.DIRECTORY_SEPARATOR.'public';
 	}
+
+	/**
+	 * Get the path to the application configuration files.
+	 *
+	 * @param  string  $path Optionally, a path to append to the config path
+	 * @return string
+	 */
+	public function configPath($path = '')
+	{
+		return $this->basePath.DIRECTORY_SEPARATOR.'config'.($path ? DIRECTORY_SEPARATOR.$path : $path);
+	}
+
 
 	/**
 	 * Get the path to the environment file directory.
