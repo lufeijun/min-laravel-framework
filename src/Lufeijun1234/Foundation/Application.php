@@ -63,6 +63,21 @@ class Application extends Container
 	protected $hasBeenBootstrapped = false;
 
 
+	/**
+	 * The custom environment path defined by the developer.
+	 *  自定义的 env 配置路径
+	 * @var string
+	 */
+	protected $environmentPath;
+
+
+	/**
+	 * The environment file to load during bootstrapping.
+	 *  配置文件
+	 * @var string
+	 */
+	protected $environmentFile = '.env';
+
 
 
 	/**
@@ -163,6 +178,25 @@ class Application extends Container
 		return $this->basePath.DIRECTORY_SEPARATOR.'public';
 	}
 
+	/**
+	 * Get the path to the environment file directory.
+	 *  环境变量配置路径
+	 * @return string
+	 */
+	public function environmentPath()
+	{
+		return $this->environmentPath ?: $this->basePath;
+	}
+
+	/**
+	 * Get the environment file the application is using.
+	 *
+	 * @return string
+	 */
+	public function environmentFile()
+	{
+		return $this->environmentFile ?: '.env';
+	}
 
 
 	/**

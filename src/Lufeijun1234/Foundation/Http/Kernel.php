@@ -29,7 +29,7 @@ class Kernel implements KernelContract
 	 * @var array
 	 */
 	protected $bootstrappers = [
-//		\Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class,
+		\Lufeijun1234\Foundation\Bootstrap\LoadEnvironmentVariables::class,
 //		\Illuminate\Foundation\Bootstrap\LoadConfiguration::class,
 //		\Illuminate\Foundation\Bootstrap\HandleExceptions::class,
 //		\Illuminate\Foundation\Bootstrap\RegisterFacades::class,
