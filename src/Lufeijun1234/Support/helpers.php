@@ -80,3 +80,36 @@ if (! function_exists('app')) {
 	}
 }
 
+
+
+if (! function_exists('storage_path')) {
+	/**
+	 * Get the path to the storage folder.
+	 *
+	 * @param string $path
+	 * @return string
+	 * @throws ReflectionException
+	 * @throws \Lufeijun1234\Container\BindingResolutionException
+	 */
+	function storage_path($path = '')
+	{
+		return app('path.storage').($path ? DIRECTORY_SEPARATOR.$path : $path);
+	}
+}
+
+
+if (! function_exists('class_basename')) {
+	/**
+	 * Get the class "basename" of the given object / class.
+	 *
+	 * @param  string|object  $class
+	 * @return string
+	 */
+	function class_basename($class)
+	{
+		$class = is_object($class) ? get_class($class) : $class;
+
+		return basename(str_replace('\\', '/', $class));
+	}
+}
+

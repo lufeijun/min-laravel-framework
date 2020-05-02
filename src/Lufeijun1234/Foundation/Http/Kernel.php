@@ -32,7 +32,7 @@ class Kernel implements KernelContract
 		\Lufeijun1234\Foundation\Bootstrap\LoadEnvironmentVariables::class,
 		\Lufeijun1234\Foundation\Bootstrap\LoadConfiguration::class,
 //		\Illuminate\Foundation\Bootstrap\HandleExceptions::class,
-//		\Illuminate\Foundation\Bootstrap\RegisterFacades::class,
+		\Lufeijun1234\Foundation\Bootstrap\RegisterFacades::class,
 //		\Illuminate\Foundation\Bootstrap\RegisterProviders::class,
 //		\Illuminate\Foundation\Bootstrap\BootProviders::class,
 	];

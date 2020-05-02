@@ -30,6 +30,13 @@ class Application extends Container
 	 */
 	protected $appPath;
 
+	/**
+	 * The custom storage path defined by the developer.
+	 *
+	 * @var string
+	 */
+	protected $storagePath;
+
 
 
 	/**
@@ -123,7 +130,7 @@ class Application extends Container
 //		$this->instance('path.lang', $this->langPath());
 		$this->instance('path.config', $this->configPath());
 		$this->instance('path.public', $this->publicPath());
-//		$this->instance('path.storage', $this->storagePath());
+		$this->instance('path.storage', $this->storagePath());
 //		$this->instance('path.database', $this->databasePath());
 //		$this->instance('path.resources', $this->resourcePath());
 		$this->instance('path.bootstrap', $this->bootstrapPath());
@@ -177,6 +184,18 @@ class Application extends Container
 	{
 		return $this->basePath.DIRECTORY_SEPARATOR.'public';
 	}
+
+
+	/**
+	 * Get the path to the storage directory.
+	 *
+	 * @return string
+	 */
+	public function storagePath()
+	{
+		return $this->storagePath ?: $this->basePath.DIRECTORY_SEPARATOR.'storage';
+	}
+
 
 	/**
 	 * Get the path to the application configuration files.
