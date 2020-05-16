@@ -36,4 +36,34 @@ abstract class ServiceProvider
 		//
 	}
 
+	/**
+	 * Get the services provided by the provider.
+	 *
+	 * @return array
+	 */
+	public function provides()
+	{
+		return [];
+	}
+
+	/**
+	 * Get the events that trigger this service provider to register.
+	 *
+	 * @return array
+	 */
+	public function when()
+	{
+		return [];
+	}
+
+	/**
+	 * Determine if the provider is deferred.
+	 *
+	 * @return bool
+	 */
+	public function isDeferred()
+	{
+		return $this instanceof DeferrableProvider;
+	}
+
 }

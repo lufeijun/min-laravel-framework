@@ -2,10 +2,14 @@
 namespace Lufeijun1234\Foundation;
 
 
+use Lufeijun1234\Abstracts\Serviceprovider\ServiceProvider;
 use Lufeijun1234\Container\Container;
 use Lufeijun1234\Contracts\Container\ContainerContract;
 use Lufeijun1234\Events\EventServiceProvider;
+use Lufeijun1234\Filesystem\Filesystem;
 use Lufeijun1234\Support\Arr;
+use Lufeijun1234\Support\Env;
+use Lufeijun1234\Support\Str;
 
 class Application extends Container
 {
@@ -84,6 +88,38 @@ class Application extends Container
 	 * @var string
 	 */
 	protected $environmentFile = '.env';
+
+
+	/**
+	 * The prefixes of absolute cache paths for use during normalization.
+	 *
+	 * @var array
+	 */
+	protected $absoluteCachePathPrefixes = [DIRECTORY_SEPARATOR];
+
+
+	/**
+	 * The deferred services and their providers.
+	 *
+	 * @var array
+	 */
+	protected $deferredServices = [];
+
+
+	/**
+	 * The array of booting callbacks.
+	 *
+	 * @var callable[]
+	 */
+	protected $bootingCallbacks = [];
+
+
+	/**
+	 * The array of booted callbacks.
+	 *
+	 * @var callable[]
+	 */
+	protected $bootedCallbacks = [];
 
 
 
@@ -301,9 +337,9 @@ class Application extends Container
 
 		$this->buildStack = [];
 		$this->loadedProviders = [];
-		//$this->bootedCallbacks = [];
-		//$this->bootingCallbacks = [];
-		//$this->deferredServices = [];
+		$this->bootedCallbacks = [];
+		$this->bootingCallbacks = [];
+		$this->deferredServices = [];
 		$this->reboundCallbacks = [];
 		$this->serviceProviders = [];
 		//$this->resolvingCallbacks = [];
@@ -412,18 +448,6 @@ class Application extends Container
 	}
 
 
-
-	/**
-	 * Determine if the application has booted.
-	 *  判断 application 是否启动
-	 * @return bool
-	 */
-	public function isBooted()
-	{
-		return $this->booted;
-	}
-
-
 	/**
 	 * Boot the given service provider.
 	 *  调用服务提供者的 boot 方法
@@ -471,5 +495,155 @@ class Application extends Container
 			$this['events']->dispatch('bootstrapped: '.$bootstrapper, [$this]);
 		}
 	}
+
+
+	/**
+	 * Register all of the configured providers.
+	 *  注册服务提供者
+	 * @return void
+	 * @throws \Lufeijun1234\Container\BindingResolutionException
+	 * @throws \ReflectionException
+	 * @throws \Lufeijun1234\Filesystem\FileNotFoundException
+	 */
+	public function registerConfiguredProviders()
+	{
+		$providers = $this['config']->get('app.providers');
+
+		(new ProviderRepository($this, new Filesystem, $this->getCachedServicesPath()))
+			->load($providers);
+	}
+
+
+
+	/**
+	 * Get the path to the cached services.php file.
+	 *
+	 * @return string
+	 */
+	public function getCachedServicesPath()
+	{
+		return $this->normalizeCachePath('APP_SERVICES_CACHE', 'cache/services.php');
+	}
+
+
+
+	/**
+	 * Normalize a relative or absolute path to a cache file.
+	 *
+	 * @param  string  $key
+	 * @param  string  $default
+	 * @return string
+	 */
+	protected function normalizeCachePath($key, $default)
+	{
+		if (is_null($env = Env::get($key))) {
+			return $this->bootstrapPath($default);
+		}
+
+		return Str::startsWith($env, $this->absoluteCachePathPrefixes)
+			? $env
+			: $this->basePath($env);
+	}
+
+
+
+	/**
+	 * Add an array of services to the application's deferred services.
+	 *  延迟加载
+	 * @param  array  $services
+	 * @return void
+	 */
+	public function addDeferredServices(array $services)
+	{
+		$this->deferredServices = array_merge($this->deferredServices, $services);
+	}
+
+	/**
+	 * Get the application's deferred services.
+	 *
+	 * @return array
+	 */
+	public function getDeferredServices()
+	{
+		return $this->deferredServices;
+	}
+
+	/**
+	 * Set the application's deferred services.
+	 *
+	 * @param  array  $services
+	 * @return void
+	 */
+	public function setDeferredServices(array $services)
+	{
+		$this->deferredServices = $services;
+	}
+
+	/**
+	 * Determine if the given service is a deferred service.
+	 *
+	 * @param  string  $service
+	 * @return bool
+	 */
+	public function isDeferredService($service)
+	{
+		return isset($this->deferredServices[$service]);
+	}
+
+
+
+
+	// 启动 boot
+	/**
+	 * Determine if the application has booted.
+	 *
+	 * @return bool
+	 */
+	public function isBooted()
+	{
+		return $this->booted;
+	}
+
+	/**
+	 * Boot the application's service providers.
+	 *
+	 * @return void
+	 */
+	public function boot()
+	{
+		if ($this->isBooted()) {
+			return;
+		}
+
+
+		// 调用注册的回调函数
+		$this->fireAppCallbacks($this->bootingCallbacks);
+
+		array_walk($this->serviceProviders, function ($p) {
+			$this->bootProvider($p);
+		});
+
+		$this->booted = true;
+
+		$this->fireAppCallbacks($this->bootedCallbacks);
+	}
+
+
+	/**
+	 * Call the booting callbacks for the application.
+	 *  调用回调函数
+	 * @param  callable[]  $callbacks
+	 * @return void
+	 */
+	protected function fireAppCallbacks(array $callbacks)
+	{
+		foreach ($callbacks as $callback) {
+			$callback($this);
+		}
+	}
+
+
+
+
 
 }
