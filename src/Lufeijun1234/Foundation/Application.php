@@ -7,6 +7,7 @@ use Lufeijun1234\Container\Container;
 use Lufeijun1234\Contracts\Container\ContainerContract;
 use Lufeijun1234\Events\EventServiceProvider;
 use Lufeijun1234\Filesystem\Filesystem;
+use Lufeijun1234\Routing\RoutingServiceProvider;
 use Lufeijun1234\Support\Arr;
 use Lufeijun1234\Support\Env;
 use Lufeijun1234\Support\Str;
@@ -301,9 +302,9 @@ class Application extends Container
 	protected function registerBaseServiceProviders()
 	{
 		$this->register(new EventServiceProvider($this));
+		$this->register(new RoutingServiceProvider($this));
 		return;
 		$this->register(new LogServiceProvider($this));
-		$this->register(new RoutingServiceProvider($this));
 	}
 
 
@@ -315,7 +316,9 @@ class Application extends Container
 	public function registerCoreContainerAliases()
 	{
 		$all = [
-			'app'   => [self::class, Container::class, ContainerContract::class],
+			'app'       => [self::class, Container::class, ContainerContract::class],
+			'router'    => [\Lufeijun1234\Routing\Router::class],
+			'request'   => [\Lufeijun1234\Http\Request::class, \Symfony\Component\HttpFoundation\Request::class],
 
 		];
 
@@ -642,6 +645,20 @@ class Application extends Container
 		}
 	}
 
+	/**
+	 * Register a new "booted" listener.
+	 *
+	 * @param  callable  $callback
+	 * @return void
+	 */
+	public function booted($callback)
+	{
+		$this->bootedCallbacks[] = $callback;
+
+		if ($this->isBooted()) {
+			$this->fireAppCallbacks([$callback]);
+		}
+	}
 
 
 

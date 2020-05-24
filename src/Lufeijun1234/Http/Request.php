@@ -3,6 +3,7 @@
 namespace Lufeijun1234\Http;
 
 
+use Closure;
 use Lufeijun1234\Http\Concerns\InteractsWithInput;
 use Lufeijun1234\Http\Concerns\InteractsWithContentTypes;
 use Lufeijun1234\Traits\Macroable;
@@ -13,6 +14,14 @@ class Request extends SymfonyRequest
 
 	use Macroable;
 	use InteractsWithContentTypes,InteractsWithInput;
+
+
+	/**
+	 * The route resolver callback.
+	 *
+	 * @var \Closure
+	 */
+	protected $routeResolver;
 
 	/**
 	 * Create a new Illuminate HTTP request from server variables.
@@ -66,5 +75,52 @@ class Request extends SymfonyRequest
 		return in_array($this->getRealMethod(), ['GET', 'HEAD']) ? $this->query : $this->request;
 	}
 
+
+	/**
+	 * Get the request method.
+	 *
+	 * @return string
+	 */
+	public function method()
+	{
+		return $this->getMethod();
+	}
+
+
+	/**
+	 * Get the current decoded path info for the request.
+	 *
+	 * @return string
+	 */
+	public function decodedPath()
+	{
+		return rawurldecode($this->path());
+	}
+
+
+	/**
+	 * Get the current path info for the request.
+	 *
+	 * @return string
+	 */
+	public function path()
+	{
+		$pattern = trim($this->getPathInfo(), '/');
+
+		return $pattern == '' ? '/' : $pattern;
+	}
+
+	/**
+	 * Set the route resolver callback.
+	 *
+	 * @param  \Closure  $callback
+	 * @return $this
+	 */
+	public function setRouteResolver(Closure $callback)
+	{
+		$this->routeResolver = $callback;
+
+		return $this;
+	}
 
 }

@@ -185,4 +185,99 @@ class Arr
 
 		return $array;
 	}
+
+
+
+
+	/**
+	 * Get all of the given array except for a specified array of keys.
+	 *
+	 * @param  array  $array
+	 * @param  array|string  $keys
+	 * @return array
+	 */
+	public static function except($array, $keys)
+	{
+		static::forget($array, $keys);
+
+		return $array;
+	}
+
+
+	/**
+	 * Remove one or many array items from a given array using "dot" notation.
+	 *  删除数组中的某个或者某几个元素
+	 * @param  array  $array
+	 * @param  array|string  $keys
+	 * @return void
+	 */
+	public static function forget(&$array, $keys)
+	{
+		$original = &$array;
+
+		$keys = (array) $keys;
+
+		if (count($keys) === 0) {
+			return;
+		}
+
+		foreach ($keys as $key) {
+			// if the exact key exists in the top-level, remove it
+			if (static::exists($array, $key)) {
+				unset($array[$key]);
+
+				continue;
+			}
+
+			$parts = explode('.', $key);
+
+			// clean up before each pass
+			$array = &$original;
+
+			while (count($parts) > 1) {
+				$part = array_shift($parts);
+
+				if (isset($array[$part]) && is_array($array[$part])) {
+					$array = &$array[$part];
+				} else {
+					continue 2;
+				}
+			}
+
+			unset($array[array_shift($parts)]);
+		}
+	}
+
+
+
+	/**
+	 * Return the first element in an array passing a given truth test.
+	 *  数组中寻找第一个满足条件的元素
+	 * @param  iterable  $array
+	 * @param  callable|null  $callback
+	 * @param  mixed  $default
+	 * @return mixed
+	 */
+	public static function first($array, callable $callback = null, $default = null)
+	{
+		if (is_null($callback)) {
+			if (empty($array)) {
+				return value($default);
+			}
+
+			foreach ($array as $item) {
+				return $item;
+			}
+		}
+
+		foreach ($array as $key => $value) {
+			if ($callback($value, $key)) {
+				return $value;
+			}
+		}
+
+		return value($default);
+	}
+
+
 }

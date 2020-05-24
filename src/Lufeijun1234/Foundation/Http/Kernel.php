@@ -3,7 +3,9 @@ namespace Lufeijun1234\Foundation\Http;
 
 
 use Lufeijun1234\Contracts\Http\KernelContract;
+use Lufeijun1234\Facades\Facade;
 use Lufeijun1234\Foundation\Application;
+use Lufeijun1234\Routing\Router;
 
 class Kernel implements KernelContract
 {
@@ -31,7 +33,7 @@ class Kernel implements KernelContract
 	protected $bootstrappers = [
 		\Lufeijun1234\Foundation\Bootstrap\LoadEnvironmentVariables::class,
 		\Lufeijun1234\Foundation\Bootstrap\LoadConfiguration::class,
-//		\Illuminate\Foundation\Bootstrap\HandleExceptions::class,
+		//\Illuminate\Foundation\Bootstrap\HandleExceptions::class,
 		\Lufeijun1234\Foundation\Bootstrap\RegisterFacades::class,
 		\Lufeijun1234\Foundation\Bootstrap\RegisterProviders::class,
 		\Lufeijun1234\Foundation\Bootstrap\BootProviders::class,
@@ -41,19 +43,18 @@ class Kernel implements KernelContract
 	/**
 	 * Create a new HTTP kernel instance.
 	 *
-	 * @param  \Lufeijun1234\Foundation\Application  $app
-	 * @ param  \Illuminate\Routing\Router  $router , Router $router
-	 * @return void
+	 * @param \Lufeijun1234\Foundation\Application $app
+	 * @param Router $router
 	 */
-	public function __construct(Application $app)
+	public function __construct(Application $app,Router $router)
 	{
-		$this->app = $app;
+		 $this->app = $app;
 
-		// 路由，暂时不管
-		// $this->router = $router;
+		 // 路由
+		 $this->router = $router;
 
-		// 中间件
-		// $this->syncMiddlewareToRouter();
+		 // 中间件
+		 // $this->syncMiddlewareToRouter();
 	}
 
 
@@ -106,9 +107,12 @@ class Kernel implements KernelContract
 	{
 		$this->app->instance('request', $request);
 
-		//Facade::clearResolvedInstance('request');
+		Facade::clearResolvedInstance('request');
 
 		$this->bootstrap();
+
+
+		return $this->dispatchToRouter()($request);
 
 //		return (new Pipeline($this->app))
 //			->send($request)
@@ -116,6 +120,20 @@ class Kernel implements KernelContract
 //			->then($this->dispatchToRouter());
 	}
 
+
+	/**
+	 * Get the route dispatcher callback.
+	 *
+	 * @return \Closure
+	 */
+	protected function dispatchToRouter()
+	{
+		return function ($request) {
+			$this->app->instance('request', $request);
+
+			return $this->router->dispatch($request);
+		};
+	}
 
 
 	/**

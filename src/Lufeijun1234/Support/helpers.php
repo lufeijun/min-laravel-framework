@@ -113,3 +113,39 @@ if (! function_exists('class_basename')) {
 	}
 }
 
+
+if (! function_exists('base_path')) {
+	/**
+	 * Get the path to the base of the install.
+	 *
+	 * @param string $path
+	 * @return string
+	 * @throws ReflectionException
+	 * @throws \Lufeijun1234\Container\BindingResolutionException
+	 */
+	function base_path($path = '')
+	{
+		return app()->basePath($path);
+	}
+}
+
+
+if (! function_exists('tap')) {
+	/**
+	 * Call the given Closure with the given value then return the value.
+	 *
+	 * @param  mixed  $value
+	 * @param  callable|null  $callback
+	 * @return mixed
+	 */
+	function tap($value, $callback = null)
+	{
+		if (is_null($callback)) {
+			return new HigherOrderTapProxy($value);
+		}
+
+		$callback($value);
+
+		return $value;
+	}
+}

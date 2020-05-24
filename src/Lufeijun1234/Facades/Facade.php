@@ -34,6 +34,17 @@ abstract class Facade
 		static::$resolvedInstance = [];
 	}
 
+	/**
+	 * Clear a resolved facade instance.
+	 *  清除
+	 * @param  string  $name
+	 * @return void
+	 */
+	public static function clearResolvedInstance($name)
+	{
+		unset(static::$resolvedInstance[$name]);
+	}
+
 
 	/**
 	 * Set the application instance.
