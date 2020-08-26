@@ -38,6 +38,7 @@ class Repository implements \ArrayAccess, RepositoryContract
 	public function offsetExists($offset)
 	{
 		// TODO: Implement offsetExists() method.
+		return $this->has($offset);
 	}
 
 	/**
@@ -46,6 +47,7 @@ class Repository implements \ArrayAccess, RepositoryContract
 	public function offsetGet($offset)
 	{
 		// TODO: Implement offsetGet() method.
+		return $this->get($offset);
 	}
 
 	/**
@@ -54,6 +56,7 @@ class Repository implements \ArrayAccess, RepositoryContract
 	public function offsetSet($offset, $value)
 	{
 		// TODO: Implement offsetSet() method.
+		$this->set($offset, $value);
 	}
 
 	/**
@@ -62,6 +65,7 @@ class Repository implements \ArrayAccess, RepositoryContract
 	public function offsetUnset($offset)
 	{
 		// TODO: Implement offsetUnset() method.
+		$this->set($offset, null);
 	}
 
 	/**

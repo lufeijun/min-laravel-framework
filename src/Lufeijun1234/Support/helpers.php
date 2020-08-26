@@ -149,3 +149,18 @@ if (! function_exists('tap')) {
 		return $value;
 	}
 }
+
+
+if (! function_exists('with')) {
+	/**
+	 * Return the given value, optionally passed through the given callback.
+	 *  回调一下
+	 * @param  mixed  $value
+	 * @param  callable|null  $callback
+	 * @return mixed
+	 */
+	function with($value, callable $callback = null)
+	{
+		return is_null($callback) ? $value : $callback($value);
+	}
+}

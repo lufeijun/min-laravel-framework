@@ -7,6 +7,7 @@ use Lufeijun1234\Container\Container;
 use Lufeijun1234\Contracts\Container\ContainerContract;
 use Lufeijun1234\Events\EventServiceProvider;
 use Lufeijun1234\Filesystem\Filesystem;
+use Lufeijun1234\Log\LogServiceProvider;
 use Lufeijun1234\Routing\RoutingServiceProvider;
 use Lufeijun1234\Support\Arr;
 use Lufeijun1234\Support\Env;
@@ -303,7 +304,6 @@ class Application extends Container
 	{
 		$this->register(new EventServiceProvider($this));
 		$this->register(new RoutingServiceProvider($this));
-		return;
 		$this->register(new LogServiceProvider($this));
 	}
 
