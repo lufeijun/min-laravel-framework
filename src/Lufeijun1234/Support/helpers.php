@@ -1,6 +1,7 @@
 <?php
 
 use Lufeijun1234\Container\Container;
+use Lufeijun1234\Support\Arr;
 use Lufeijun1234\Support\Env;
 
 
@@ -162,5 +163,80 @@ if (! function_exists('with')) {
 	function with($value, callable $callback = null)
 	{
 		return is_null($callback) ? $value : $callback($value);
+	}
+}
+
+if (! function_exists('head')) {
+	/**
+	 * Get the first element of an array. Useful for method chaining.
+	 *
+	 * @param  array  $array
+	 * @return mixed
+	 */
+	function head($array)
+	{
+		return reset($array);
+	}
+}
+
+if (! function_exists('data_set')) {
+	/**
+	 * Set an item on an array or object using dot notation.
+	 *
+	 * @param  mixed  $target
+	 * @param  string|array  $key
+	 * @param  mixed  $value
+	 * @param  bool  $overwrite
+	 * @return mixed
+	 */
+	function data_set(&$target, $key, $value, $overwrite = true)
+	{
+		$segments = is_array($key) ? $key : explode('.', $key);
+
+		if (($segment = array_shift($segments)) === '*') {
+			if (! Arr::accessible($target)) {
+				$target = [];
+			}
+
+			if ($segments) {
+				foreach ($target as &$inner) {
+					data_set($inner, $segments, $value, $overwrite);
+				}
+			} elseif ($overwrite) {
+				foreach ($target as &$inner) {
+					$inner = $value;
+				}
+			}
+		} elseif (Arr::accessible($target)) {
+			if ($segments) {
+				if (! Arr::exists($target, $segment)) {
+					$target[$segment] = [];
+				}
+
+				data_set($target[$segment], $segments, $value, $overwrite);
+			} elseif ($overwrite || ! Arr::exists($target, $segment)) {
+				$target[$segment] = $value;
+			}
+		} elseif (is_object($target)) {
+			if ($segments) {
+				if (! isset($target->{$segment})) {
+					$target->{$segment} = [];
+				}
+
+				data_set($target->{$segment}, $segments, $value, $overwrite);
+			} elseif ($overwrite || ! isset($target->{$segment})) {
+				$target->{$segment} = $value;
+			}
+		} else {
+			$target = [];
+
+			if ($segments) {
+				data_set($target[$segment], $segments, $value, $overwrite);
+			} elseif ($overwrite) {
+				$target[$segment] = $value;
+			}
+		}
+
+		return $target;
 	}
 }

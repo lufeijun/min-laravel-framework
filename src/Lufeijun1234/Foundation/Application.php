@@ -2,6 +2,7 @@
 namespace Lufeijun1234\Foundation;
 
 
+use Closure;
 use Lufeijun1234\Abstracts\Serviceprovider\ServiceProvider;
 use Lufeijun1234\Container\Container;
 use Lufeijun1234\Contracts\Container\ContainerContract;
@@ -269,6 +270,43 @@ class Application extends Container
 
 
 	/**
+	 * Get or check the current application environment.
+	 *
+	 * @param  string|array  $environments
+	 * @return string|bool
+	 */
+	public function environment(...$environments)
+	{
+		if (count($environments) > 0) {
+			$patterns = is_array($environments[0]) ? $environments[0] : $environments;
+
+			return Str::is($patterns, $this['env']);
+		}
+
+		return $this['env'];
+	}
+
+	// 判断系统当前环境
+	public function detectEnvironment(Closure $callback)
+	{
+		$args = $_SERVER['argv'] ?? null;
+
+		return $this['env'] = (new EnvironmentDetector)->detect($callback, $args);
+	}
+
+	public function isLocal()
+	{
+		return $this['env'] === 'local';
+	}
+
+	public function isProduction()
+	{
+		return $this['env'] === 'production';
+	}
+
+
+
+	/**
 	 * Register the basic bindings into the container.
 	 *  注册一些基础的服务类绑定
 	 * @return void
@@ -319,6 +357,8 @@ class Application extends Container
 			'app'       => [self::class, Container::class, ContainerContract::class],
 			'router'    => [\Lufeijun1234\Routing\Router::class],
 			'request'   => [\Lufeijun1234\Http\Request::class, \Symfony\Component\HttpFoundation\Request::class],
+			'log'       => [Lufeijun1234\Log\LogManager::class, \Psr\Log\LoggerInterface::class],
+
 
 		];
 

@@ -8,12 +8,20 @@ use Lufeijun1234\Http\Concerns\InteractsWithInput;
 use Lufeijun1234\Http\Concerns\InteractsWithContentTypes;
 use Lufeijun1234\Traits\Macroable;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
 class Request extends SymfonyRequest
 {
 
 	use Macroable;
 	use InteractsWithContentTypes,InteractsWithInput;
+
+	/**
+	 * The decoded JSON content for the request.
+	 *
+	 * @var \Symfony\Component\HttpFoundation\ParameterBag|null
+	 */
+	protected $json;
 
 
 	/**
@@ -88,6 +96,28 @@ class Request extends SymfonyRequest
 
 
 	/**
+	 * Get the JSON payload for the request.
+	 *
+	 * @param  string|null  $key
+	 * @param  mixed  $default
+	 * @return \Symfony\Component\HttpFoundation\ParameterBag|mixed
+	 */
+	public function json($key = null, $default = null)
+	{
+		if (! isset($this->json)) {
+			$this->json = new ParameterBag((array) json_decode($this->getContent(), true));
+		}
+
+		if (is_null($key)) {
+			return $this->json;
+		}
+
+		return data_get($this->json->all(), $key, $default);
+	}
+
+
+
+	/**
 	 * Get the current decoded path info for the request.
 	 *
 	 * @return string
@@ -122,5 +152,27 @@ class Request extends SymfonyRequest
 
 		return $this;
 	}
+
+
+	/**
+	 * Determine if the request is the result of an AJAX call.
+	 *  判断是否为 ajax 请求
+	 * @return bool
+	 */
+	public function ajax()
+	{
+		return $this->isXmlHttpRequest();
+	}
+
+	/**
+	 * Determine if the request is the result of an PJAX call.
+	 *  判断 pajax 请求
+	 * @return bool
+	 */
+	public function pjax()
+	{
+		return $this->headers->get('X-PJAX') == true;
+	}
+
 
 }

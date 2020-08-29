@@ -3,11 +3,16 @@
 
 namespace Lufeijun1234\Http;
 
+use Lufeijun1234\Traits\Macroable;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class Response extends SymfonyResponse
 {
+
+	use ResponseTrait, Macroable {
+		Macroable::__call as macroCall;
+	}
 
 
 	/**
