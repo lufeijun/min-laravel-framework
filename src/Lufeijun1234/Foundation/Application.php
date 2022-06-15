@@ -125,6 +125,14 @@ class Application extends Container
 	protected $bootedCallbacks = [];
 
 
+  /**
+   * The application namespace.
+   * 程序命名空间
+   * @var string
+   */
+  protected $namespace;
+
+
 
 	/**
 	 * Application constructor.
@@ -141,6 +149,16 @@ class Application extends Container
 		$this->registerCoreContainerAliases();
 	}
 
+
+  /**
+   * Get the version number of the application.
+   *
+   * @return string
+   */
+  public function version()
+  {
+    return static::VERSION;
+  }
 
 	/**
 	 * Set the base path for the application.
@@ -490,8 +508,20 @@ class Application extends Container
 		$this->loadedProviders[get_class($provider)] = true;
 	}
 
+  // 做个样子先
+  public function loadDeferredProviders()
+  {
+    return;
+    // We will simply spin through each of the deferred providers and register each
+    // one and boot them if the application has booted. This should make each of
+    // the remaining services available to this application for immediate use.
+    foreach ($this->deferredServices as $service => $provider) {
+      $this->loadDeferredProvider($service);
+    }
 
-	/**
+  }
+
+    /**
 	 * Boot the given service provider.
 	 *  调用服务提供者的 boot 方法
 	 * @param ServiceProvider $provider
@@ -700,6 +730,34 @@ class Application extends Container
 		}
 	}
 
+
+  /**
+   * Get the application namespace.
+   *
+   * @return string
+   *
+   * @throws \RuntimeException
+   */
+  public function getNamespace()
+  {
+    if (! is_null($this->namespace)) {
+      return $this->namespace;
+    }
+
+    $composer = json_decode(file_get_contents($this->basePath('composer.json')), true);
+
+
+
+    foreach ((array) data_get($composer, 'autoload.psr-4') as $namespace => $path) {
+      foreach ((array) $path as $pathChoice) {
+        if (realpath($this->path()) === realpath($this->basePath($pathChoice))) {
+          return $this->namespace = $namespace;
+        }
+      }
+    }
+
+    throw new \RuntimeException('Unable to detect application namespace.');
+  }
 
 
 

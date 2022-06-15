@@ -96,4 +96,17 @@ class Str
 		return false;
 	}
 
+
+  /**
+   * Return the remainder of a string after the first occurrence of a given value.
+   *
+   * @param  string  $subject
+   * @param  string  $search
+   * @return string
+   */
+  public static function after($subject, $search)
+  {
+    return $search === '' ? $subject : array_reverse(explode($search, $subject, 2))[0];
+  }
+
 }
